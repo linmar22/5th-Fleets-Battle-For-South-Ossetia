@@ -5,8 +5,11 @@
 --Created by Shaky Jones (MrEman25)
 
 --set global spawn min/max times
-spawnTimeMin = 1200
+spawnTimeMin = 900
 spawnTimeMax = 3600
+
+testZone1 = ZONE:New("test zone 1")
+testZone2 = ZONE:New("test zone 2")
 
 redDetectionSetGroup = SET_GROUP:New()
 redDetectionSetGroup:FilterPrefixes({"red EWR","3rd Separate AA","481 Air Def Missile Rgt","Abkhazia S-300","Abkhazia SA-11"})
