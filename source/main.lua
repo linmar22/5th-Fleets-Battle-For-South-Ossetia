@@ -8,8 +8,7 @@
 spawnTimeMin = 900
 spawnTimeMax = 3600
 
-testZone1 = ZONE:New("test zone 1")
-testZone2 = ZONE:New("test zone 2")
+
 
 redDetectionSetGroup = SET_GROUP:New()
 redDetectionSetGroup:FilterPrefixes({"red EWR","3rd Separate AA","481 Air Def Missile Rgt","Abkhazia S-300","Abkhazia SA-11"})
@@ -114,3 +113,18 @@ end
 createGciSquadron(redA2ADispatcher,ThirdFighterRgtGci)
 createGciSquadron(redA2ADispatcher, NineteenthFighterRgtGci)
 createGciSquadron(redA2ADispatcher,ThirtyfirstGuardFighterRgtGci)
+
+testZone1 = ZONE:New("test zone 1")
+testZone2 = ZONE:New("test zone 2")
+
+
+CasZones = {
+  testZone1,
+  testZone2  
+}
+rand = math.random(1,table.getn(redCAS))
+
+rand2 = math.random(1,table.getn(CasZones))
+
+testCasSpawn = SPAWN:NewWithAlias(redCAS[rand],"CasSpawn")
+testCasSpawn:SpawnInZone(CasZones[rand2],true)
