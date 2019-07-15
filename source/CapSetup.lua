@@ -1,29 +1,29 @@
---5th Fleet Battle For South Ossetia is a persistant server mission for the 5th Fleet.
---It contains smart spawned CAP, GCI, BAI and CAS Groups, and options to spawn random ground
---targets.
---
---Created by Shaky Jones (MrEman25)
+--[[ This file creates CAP and GCI Squads for blue and red coalition.  Detection gorups are created for an automated dispatcher,
+then squadron tables are created.  The squad tables and dispatcher are sent to functions that set them up as CAP or GCI squads 
+using MOOSE ]]--
 
---set global spawn min/max times
+--set globals for spawning flights
 spawnTimeMin = 900
 spawnTimeMax = 3600
 
-
-
-redDetectionSetGroup = SET_GROUP:New()
-redDetectionSetGroup:FilterPrefixes({"red EWR","3rd Separate AA","481 Air Def Missile Rgt","Abkhazia S-300","Abkhazia SA-11"})
-redDetectionSetGroup:FilterStart()
-
-redDetection = DETECTION_AREAS:New(redDetectionSetGroup,30000)
-
-redA2ADispatcher = AI_A2A_DISPATCHER:New(redDetection)
-redA2ADispatcher:SetGciRadius(120)
-
+--create zones for CAP flights to patrol
 CAPZoneAbkhazia = ZONE_POLYGON:New("redCAPZoneAbkhazia",GROUP:FindByName("red CAP Zone Abkhazia"))
 CAPZoneKrymsk = ZONE_POLYGON:New("redCAPZoneKrymsk",GROUP:FindByName("red CAP Zone Krymsk"))
 CAPZoneStavropol = ZONE_POLYGON:New("redZCAPZoneStavropol",GROUP:FindByName("red CAP Zone Stavropol"))
 
 
+--set up detection set groups and detection objects
+redDetectionSetGroup = SET_GROUP:New()
+redDetectionSetGroup:FilterPrefixes({"red EWR","3rd Separate AA","481 Air Def Missile Rgt","Abkhazia S-300","Abkhazia SA-11"})
+redDetectionSetGroup:FilterStart()
+redDetection = DETECTION_AREAS:New(redDetectionSetGroup,30000)
+
+--create dispatchers
+redA2ADispatcher = AI_A2A_DISPATCHER:New(redDetection)
+redA2ADispatcher:SetGciRadius(120)
+
+
+--create squadron tables
 ThirdFighterRgtCap = {
   name = "3rdFighterRgtCap",
   airbase = AIRBASE.Caucasus.Gudauta,
@@ -93,7 +93,16 @@ ThirtyfirstGuardFighterRgtGci = {
   maxEngageSpeed = 1400
 }
 
+AAFMiG21Gci = {
+  name = "AAFMiG21Gci",
+  airbase = AIRBASE.Caucasus.Sukhumi_Babushara,
+  template = {"red AAF MiG21 Intercept Template"},
+  resources = 4,
+  minEngageSpeed = 450,
+  maxEngageSpeed = 1300,
+}
 
+--Function creates a squadron in given dispatcher using given squadron table
 function createCapSquadron(dispatcher,squadron)
   dispatcher:SetSquadron(squadron.name,squadron.airbase,squadron.template,squadron.resources)
   dispatcher:SetSquadronCap(squadron.name,squadron.zone,squadron.minAlt,squadron.maxAlt,squadron.minPatrolSpeed,squadron.maxPatrolSpeed,squadron.minEngageSpeed,squadron.maxEngageSpeed,"BARO")
@@ -101,30 +110,19 @@ function createCapSquadron(dispatcher,squadron)
   dispatcher:SetSquadronCapInterval(squadron.name,1,spawnTimeMin,spawnTimeMax)
 end
 
+--create CAP squadrons for coalitions
 createCapSquadron(redA2ADispatcher,ThirdFighterRgtCap)
 createCapSquadron(redA2ADispatcher,NineteenthFighterRgtCap)
 createCapSquadron(redA2ADispatcher,ThirtyfirstGuardFighterRgtCap)
 
+--create a GCI squadron in a given dispatcher using a given squadron table
 function createGciSquadron(dispatcher,squadron)
   dispatcher:SetSquadron(squadron.name,squadron.airbase,squadron.template,squadron.resources)
   dispatcher:SetSquadronGci(squadron.name,squadron.minEngageSpeed,squadron.maxEngageSpeed)
 end
 
+--create the GCI squads
 createGciSquadron(redA2ADispatcher,ThirdFighterRgtGci)
 createGciSquadron(redA2ADispatcher, NineteenthFighterRgtGci)
 createGciSquadron(redA2ADispatcher,ThirtyfirstGuardFighterRgtGci)
-
-testZone1 = ZONE:New("test zone 1")
-testZone2 = ZONE:New("test zone 2")
-
-
-CasZones = {
-  testZone1,
-  testZone2  
-}
-rand = math.random(1,table.getn(redCAS))
-
-rand2 = math.random(1,table.getn(CasZones))
-
-testCasSpawn = SPAWN:NewWithAlias(redCAS[rand],"CasSpawn")
-testCasSpawn:SpawnInZone(CasZones[rand2],true)
+createGciSquadron(redA2ADispatcher,AAFMiG21Gci)
