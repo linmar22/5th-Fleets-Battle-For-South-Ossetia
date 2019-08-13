@@ -8,8 +8,3 @@ blueCAS = {
   "41 Mech Inf Bat",
   "42 Mech Inf Bat",
 }
-
-blueJtac = {
-  "JTAC001",
-  "JTAC002",
-}

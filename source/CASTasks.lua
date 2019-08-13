@@ -4,43 +4,42 @@ is spawned in a random zone, with a friendly group spawning nearby.  An invisibl
 drone is also spawned to act as a reliable JTAC.  Player can then use Radio to get info on
 Las and command JTAC to smoke, lase ect.]]--
 
-testZone1 = ZONE:New("test zone 1")
-testZone2 = ZONE:New("test zone 2")
-testZone3 = ZONE:New("test zone 3")
-testZone4 = ZONE:New("test zone 4")
+--Declare all CAS Zones
+local zoneTableSize = 10
+
+redCasZones = {}
+blueCasZones = {}
+for i=1, zoneTableSize do
+  if i < 10 then
+    redCasZones[i] = ZONE:New("red CAS Zone #00"..i)
+    blueCasZones[i] = ZONE:New("blue CAS Zone #00"..i)
+  elseif i < 100 then
+    redCasZones[i] = ZONE:New("red CAS Zone #0"..i)
+    blueCasZones[i] = ZONE:New("blue CAS Zone #0"..i)
+  else
+    redCasZones[i] = ZONE:New("red CAS Zone #"..i)
+    blueCasZones[i] = ZONE:New("blue CAS Zone #"..i)
+  end
+end
+
+--initial math random to prevent same number being initialized
+math.random()
 
 
-CasZones = {
-  testZone1,
-  testZone2  
-}
-blueZones = {
-  testZone3,
-  testZone4
-}
-rand = math.random(1,table.getn(redCAS))
-rand2 = math.random(1,table.getn(CasZones))
-rand3 = math.random(1,table.getn(blueCAS))
+--function to spawn CAS Mission in random area with random units
+function spawnCasMission(argumentTable)
+  local rand1 = math.random(table.getn(argumentTable[1]))
+  local rand2 = math.random(table.getn(argumentTable[2]))
+  local rand3 = math.random(table.getn(argumentTable[3]))
+  local enemySpawn = SPAWN:NewWithAlias(argumentTable[1][rand1],"enemy CAS")
+  enemySpawn:SpawnInZone(argumentTable[3][rand3],true)
+  local friendlySpawn = SPAWN:NewWithAlias(argumentTable[2][rand2],"friendly CAS")
+  friendlySpawn:SpawnInZone(argumentTable[4][rand3],true)
+end
 
-testCasSpawn = SPAWN:NewWithAlias(redCAS[rand],"CasSpawn")
-testCasSpawn:SpawnInZone(CasZones[rand2],true)
 
-testblueCAS = SPAWN:NewWithAlias(blueCAS[rand3],"blueSpawn")
-testblueCAS:SpawnInZone(blueZones[rand2],true)
+--Add menu item for CAS Missions (Coalition dependant)
+local blueCasMissionOption = MENU_COALITION:New(coalition.side.BLUE,"A-G Missions")
+local blueCasMissionCommand = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Start CAS Mission",blueCasMissionOption,spawnCasMission,{redCAS,blueCAS,redCasZones,blueCasZones})
 
-JTACgroup = GROUP:FindByName(blueJtac[rand2])
-JTACgroup:Activate()
 
-blueHQ = GROUP:FindByName("blue HQ")
-blueCC = COMMANDCENTER:New(blueHQ, "blue HQ")
-
-JtacSetGroup = SET_GROUP:FilterPrefixes(blueJtac[rand2])
-JtacSetGroup:FilterStart()
-blueDetection = DETECTION_UNITS:New(JtacSetGroup)
-
-attackSet = SET_GROUP:New():FilterPrefixes(redCAS[rand])
-attackSet:FilterStart()
-
-jtacDesignation = DESIGNATE:New(blueCC,blueDetection,attackSet)
-jtacDesignation:GenerateLaserCodes()
-jtacDesignation:MenuStatus()

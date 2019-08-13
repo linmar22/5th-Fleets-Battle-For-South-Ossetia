@@ -3,13 +3,16 @@ then squadron tables are created.  The squad tables and dispatcher are sent to f
 using MOOSE ]]--
 
 --set globals for spawning flights
-spawnTimeMin = 900
-spawnTimeMax = 3600
+spawnTimeMin = 3700
+spawnTimeMax = 9000
 
 --create zones for CAP flights to patrol
-CAPZoneAbkhazia = ZONE_POLYGON:New("redCAPZoneAbkhazia",GROUP:FindByName("red CAP Zone Abkhazia"))
-CAPZoneKrymsk = ZONE_POLYGON:New("redCAPZoneKrymsk",GROUP:FindByName("red CAP Zone Krymsk"))
-CAPZoneStavropol = ZONE_POLYGON:New("redZCAPZoneStavropol",GROUP:FindByName("red CAP Zone Stavropol"))
+CAPZoneAbkhazia = ZONE_POLYGON:New("CAPZoneAbkhazia",GROUP:FindByName("CAP Zone Abkhazia"))
+CAPZoneBatumi = ZONE_POLYGON:New("capZoneBatumi",GROUP:FindByName("CAP Zone Batumi"))
+CAPZoneKrymsk = ZONE_POLYGON:New("CAPZoneKrymsk",GROUP:FindByName("CAP Zone Krymsk"))
+CAPZoneStavropol = ZONE_POLYGON:New("CAPZoneStavropol",GROUP:FindByName("CAP Zone Stavropol"))
+CAPZoneTurkey = ZONE_POLYGON:New("capZoneTurkey",GROUP:FindByName("CAP Zone Turkey"))
+
 
 
 --set up detection set groups and detection objects
@@ -18,10 +21,17 @@ redDetectionSetGroup:FilterPrefixes({"red EWR","3rd Separate AA","481 Air Def Mi
 redDetectionSetGroup:FilterStart()
 redDetection = DETECTION_AREAS:New(redDetectionSetGroup,30000)
 
+blueDetectionSetGroup = SET_GROUP:New()
+blueDetectionSetGroup:FilterPrefixes({"blue SA11","blue EWR","5th Fleet"})
+blueDetectionSetGroup:FilterStart()
+blueDetection = DETECTION_AREAS:New(blueDetectionSetGroup,30000)
+
 --create dispatchers
 redA2ADispatcher = AI_A2A_DISPATCHER:New(redDetection)
 redA2ADispatcher:SetGciRadius(120)
 
+blueA2ADispatcher = AI_A2A_DISPATCHER:New(blueDetection)
+blueA2ADispatcher:SetGciRadius(120)
 
 --create squadron tables
 ThirdFighterRgtCap = {
@@ -102,6 +112,61 @@ AAFMiG21Gci = {
   maxEngageSpeed = 1300,
 }
 
+FighterSquadron213Cap = {
+  name = "BlacklionsCAP",
+  airbase = AIRBASE.Caucasus.Batumi,
+  template = {"blue F14B CAP Template"},
+  resources = 6,
+  zone = CAPZoneTurkey,
+  minAlt = 4500,
+  maxAlt= 9100,
+  minPatrolSpeed = 370,
+  maxPatrolSpeed = 555,
+  minEngageSpeed = 555,
+  maxEngageSpeed = 1400
+}
+
+FighterSquadron323Cap = {
+  name = "DeathRattlersCAP",
+  airbase = AIRBASE.Caucasus.Batumi,
+  template = {"blue FA18C CAP Template"},
+  resources = 12,
+  zone = CAPZoneBatumi,
+  minAlt = 4500,
+  maxAlt = 9100,
+  minPatrolSpeed = 370,
+  maxPatrolSpeed = 555,
+  minEngageSpeed = 555,
+  maxEngageSpeed = 1400,
+}
+
+GAFL39SquadGCI = {
+  name = "GafL39Gci",
+  airbase = AIRBASE.Caucasus.Tbilisi_Lochini,
+  template = {"blue L39ZA GCI Template"},
+  resources = 2,
+  minEngageSpeed = 450,
+  maxEngageSpeed = 1300,  
+}
+
+FighterSquadron213GCI ={
+  name = "BlacklionsGCI",
+  airbase = "CVN70",
+  template = {"blue F14B CAP Template"},
+  resources = 6,
+  minEngageSpeed = 555,
+  maxEngageSpeed = 1400
+}
+
+FighterSquadron323GCI = {
+  name = "DeathRattlersGCI",
+  airbase = "CVN74",
+  template = {"blue FA18C GCI Template"},
+  resources = 12,
+  minEngageSpeed = 555,
+  maxEngageSpeed = 1400,
+}
+
 --Function creates a squadron in given dispatcher using given squadron table
 function createCapSquadron(dispatcher,squadron)
   dispatcher:SetSquadron(squadron.name,squadron.airbase,squadron.template,squadron.resources)
@@ -115,6 +180,9 @@ createCapSquadron(redA2ADispatcher,ThirdFighterRgtCap)
 createCapSquadron(redA2ADispatcher,NineteenthFighterRgtCap)
 createCapSquadron(redA2ADispatcher,ThirtyfirstGuardFighterRgtCap)
 
+createCapSquadron(blueA2ADispatcher,FighterSquadron213Cap)
+createCapSquadron(blueA2ADispatcher,FighterSquadron323Cap)
+
 --create a GCI squadron in a given dispatcher using a given squadron table
 function createGciSquadron(dispatcher,squadron)
   dispatcher:SetSquadron(squadron.name,squadron.airbase,squadron.template,squadron.resources)
@@ -126,3 +194,10 @@ createGciSquadron(redA2ADispatcher,ThirdFighterRgtGci)
 createGciSquadron(redA2ADispatcher, NineteenthFighterRgtGci)
 createGciSquadron(redA2ADispatcher,ThirtyfirstGuardFighterRgtGci)
 createGciSquadron(redA2ADispatcher,AAFMiG21Gci)
+
+createGciSquadron(blueA2ADispatcher,GAFL39SquadGCI)
+--createGciSquadron(blueA2ADispatcher,FighterSquadron213GCI)
+--createGciSquadron(blueA2ADispatcher,FighterSquadron323GCI)
+
+blueA2ADispatcher:SetSquadron(FighterSquadron213GCI.name,FighterSquadron213GCI.airbase,FighterSquadron213GCI.template,FighterSquadron213GCI.resources)
+blueA2ADispatcher:SetSquadronGci(FighterSquadron213GCI.name,FighterSquadron213GCI.minEngageSpeed,FighterSquadron213GCI.maxEngageSpeed)
