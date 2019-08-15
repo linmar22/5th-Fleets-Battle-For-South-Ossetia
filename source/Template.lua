@@ -5,6 +5,7 @@ redCAS = {
 }
 
 blueCAS = {
-  "41 Mech Inf Bat",
-  "42 Mech Inf Bat",
+  "41_42_43 Mech Inf Bat",
+  "11 Talavi Light Inf Bat",
+  "12_13_21_22_23_31_32_33 Light Inf Batt",
 }

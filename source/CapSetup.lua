@@ -199,5 +199,5 @@ createGciSquadron(blueA2ADispatcher,GAFL39SquadGCI)
 --createGciSquadron(blueA2ADispatcher,FighterSquadron213GCI)
 --createGciSquadron(blueA2ADispatcher,FighterSquadron323GCI)
 
-blueA2ADispatcher:SetSquadron(FighterSquadron213GCI.name,FighterSquadron213GCI.airbase,FighterSquadron213GCI.template,FighterSquadron213GCI.resources)
-blueA2ADispatcher:SetSquadronGci(FighterSquadron213GCI.name,FighterSquadron213GCI.minEngageSpeed,FighterSquadron213GCI.maxEngageSpeed)
+--blueA2ADispatcher:SetSquadron(FighterSquadron213GCI.name,FighterSquadron213GCI.airbase,FighterSquadron213GCI.template,FighterSquadron213GCI.resources)
+--blueA2ADispatcher:SetSquadronGci(FighterSquadron213GCI.name,FighterSquadron213GCI.minEngageSpeed,FighterSquadron213GCI.maxEngageSpeed)
