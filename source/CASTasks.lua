@@ -5,10 +5,12 @@ drone is also spawned to act as a reliable JTAC.  Player can then use Radio to g
 Las and command JTAC to smoke, lase ect.]]--
 
 --declare userflag to check if there is a CAS Mission already running.
-flagStartblueCasMission = USERFLAG:New("startBlueCasMission")
-flagStartblueCasMission:Set(0)
-flagblueCasMissionRunning = USERFLAG:New("blueCasMissionRunning")
-flagblueCasMissionRunning:Set(0)
+flagStartBlueCasMission = USERFLAG:New("startBlueCasMission")
+flagStartBlueCasMission:Set(0)
+flagBlueCasMissionRunning = USERFLAG:New("blueCasMissionRunning")
+flagBlueCasMissionRunning:Set(0)
+flagEndBlueCasMission = USERFLAG:New("endBlueCasMission")
+flagEndBlueCasMission:Set(0)
 
 SETTINGS:SetA2G_LL_DDM()
 
@@ -31,7 +33,6 @@ for i=1, zoneTableSize do
 end
 
 
-
 --function to spawn CAS Mission in random area with random units
 local function spawnCasMission(enemyTemplates,friendlyTemplates,enemySpawnZones,friendlySpawnZones)
   local rand1 = math.random(table.getn(enemyTemplates))
@@ -40,8 +41,8 @@ local function spawnCasMission(enemyTemplates,friendlyTemplates,enemySpawnZones,
   local enemySpawn = SPAWN:New(enemyTemplates[rand1])
   local enemyGroup = enemySpawn:SpawnInZone(enemySpawnZones[rand3],true)  
   local friendlySpawn = SPAWN:New(friendlyTemplates[rand2])
-  friendlySpawn:SpawnInZone(friendlySpawnZones[rand3],true)
-  return enemyGroup
+  local friendlyGroup = friendlySpawn:SpawnInZone(friendlySpawnZones[rand3],true)
+  return friendlyGroup, enemyGroup
 end
 
 --spawn a blue JTAC Drone that will orbit the enemy group
@@ -56,7 +57,7 @@ end
 
 --Set flag to start a blue CAS Mission
 function startBlueCasMission()
-  flagStartblueCasMission:Set(1)
+  flagStartBlueCasMission:Set(1)
 end
 
 local function getMissionCoordinatesLLDMS(enemyGroup)
@@ -89,11 +90,29 @@ local function getMissionCoordinatesMGRS(enemyGroup)
   end
 end
 
+--Changes flag to start cancelling Mission
+local function blueCancelCasMission()
+  flagEndBlueCasMission:Set(1)
+end
+
+--remove all Cas Units remaining in the game
+local function removeCasUnits(friendlyGroup,enemyGroup,jtac)
+  friendlyGroup:Destroy()
+  enemyGroup:Destroy()
+  jtac:Destroy()
+end
+
+--Menu Items to Start Mission
+blueCasMissionOptions = MENU_COALITION:New(coalition.side.BLUE,"CAS Missions")
+blueCasMissionStart = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Start CAS Mission",blueCasMissionOptions,startBlueCasMission,{})
+
+
+
 --scheduled function to check if a mission has been set to start
 local function casTasksMain()  
   --Startup Mission if CLient has selected CAS Mission in radio command
-  if flagStartblueCasMission:Get(1) == 1 then
-    blueEnemyGroup = spawnCasMission(redCAS,blueCAS,redCasZones,blueCasZones)
+  if flagStartBlueCasMission:Is(1) then
+    blueFriendlyGroup, blueEnemyGroup = spawnCasMission(redCAS,blueCAS,redCasZones,blueCasZones)
     blueJtac = spawnBlueJtac(blueEnemyGroup)
     
     --Create menu items for displaying coordinates of target area
@@ -102,32 +121,38 @@ local function casTasksMain()
     blueCasMissionGetCoordinatesLLDDM = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"LL DDM",blueCasMissionGetCoordinatesOption,getMissionCoordinatesLLDDM,blueEnemyGroup)
     blueCasMissionGetCoordinatesMGRS = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"MGRS",blueCasMissionGetCoordinatesOption,getMissionCoordinatesMGRS,blueEnemyGroup)
     
-    --Create designation options
-    blueHQ = GROUP:FindByName("blue HQ")
+    --Create Menu for cancelling the mission
+    blueCasMissionCancel = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Cancel Mission",blueCasMissionOptions,blueCancelCasMission)
+    
+    blueCasMissionStart:Remove()
+    flagStartBlueCasMission:Set(0)    
+    flagBlueCasMissionRunning:Set(1)
+  end
+  
+  --Remove remaining units if Mission is cancelled or finished
+  if flagEndBlueCasMission:Is(1) then
+    removeCasUnits(blueFriendlyGroup, blueEnemyGroup, blueJtac)
+    blueCasMissionStart = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Start CAS Mission",blueCasMissionOptions,startBlueCasMission,{})
+    blueCasMissionGetCoordinatesOption:Remove()
+    blueCasMissionCancel:Remove()
+    flagEndBlueCasMission:Set(0)
+  end    
+end
+
+
+--Create Designation Objects for Coalitions
+blueHQ = GROUP:FindByName("blue HQ")
     blueCC = COMMANDCENTER:New(blueHQ,"Artsivi")
     blueAFAC = SET_GROUP:New():FilterPrefixes("blue JTAC"):FilterStart()
     blueDetection = DETECTION_AREAS:New(blueAFAC,2000)
     bluePcs = SET_GROUP:New():FilterCoalitions("blue"):FilterPrefixes("PC"):FilterStart()
     blueDesignate = DESIGNATE:New(blueCC,blueDetection,bluePcs)
       :SetThreatLevelPrioritization(true)
-      :GenerateLaserCodes()
+      :SetLaserCodes(1688)
       :AddMenuLaserCode(1113,"Set laser code for Su-25T (%d)")
-      :SetLaseDuration(3600)
+      :SetMaximumDesignations(1)
       :__Detect(-5)
-    flagStartblueCasMission:Set(0)
-    flagblueCasMissionRunning:Set(1)
-    
-  --Monitor for all enemy units to be dead in order to end mission and stop scheduled tasks and menu items
-  end    
-end
-
-
-blueCasMissionOptions = MENU_COALITION:New(coalition.side.BLUE,"CAS Missions")
-blueCasMissionStart = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Start CAS Mission",blueCasMissionOptions,startBlueCasMission,{})    
-
-
-  
- 
-
+      
+--Main scheduler function to monitor for player commands
 casTasksScheduler = SCHEDULER:New(nil,casTasksMain,{},1,1)
 casTasksScheduler:Start()
