@@ -18,6 +18,10 @@ and ground forces, HOWEVER the mission itself is fictional.
 3) Mission will appear in DCS under 'My Missions'
 
 ## Spawning Missions
+Battle for South Ossetia allows clients to generate various missions for their coalition.  The mission units and their locations are randomized, but also are comprised of real groupings and located in an area that makes sense (A CAS mission won't occur 100 miles behind the conflict area).  The current missions available are CAS, BAI/Strike, Intercept and Escort.
+
+### CAS Missions
+CAS Missions are comprised of an enemy group of ground forces, with a friendly group located nearby, and a JTAC.  Using the radio menu, clients can have the target marked by laser, smoke, or illumination.  JTAC is controlled using MOOSE's DESIGNATE function.  Friendly ground targets can also be controlled via Combined Arms, allowing for coordinated air/ground attacks on enemy units.
 
 ## Future Plans
 - Add transport missions a la CTLD
