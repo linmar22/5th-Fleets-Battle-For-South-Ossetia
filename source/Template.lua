@@ -24,3 +24,8 @@ blueCAS = {
   "13 MEU Tank Platoon",
   "1 Light Armored Rec Bat",
 }
+
+redBai = {
+  "291_292 Artillery Rgt",
+  "493 MRLS Rgt",
+}

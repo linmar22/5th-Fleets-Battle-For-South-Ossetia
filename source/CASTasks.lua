@@ -124,11 +124,11 @@ local function casTasksMain()
     --Create Menu for cancelling the mission
     blueCasMissionCancel = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Cancel Mission",blueCasMissionOptions,blueCancelCasMission)
     
+    --Set flags and remove unneeded menu commands
     blueCasMissionStart:Remove()
     flagStartBlueCasMission:Set(0)    
     flagBlueCasMissionRunning:Set(1)
   end
-  
   --Remove remaining units if Mission is cancelled or finished
   if flagEndBlueCasMission:Is(1) then
     removeCasUnits(blueFriendlyGroup, blueEnemyGroup, blueJtac)
@@ -138,6 +138,8 @@ local function casTasksMain()
     flagEndBlueCasMission:Set(0)
   end    
 end
+
+--On death of all enemy groups, end mission
 
 
 --Create Designation Objects for Coalitions
