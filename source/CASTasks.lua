@@ -139,8 +139,6 @@ local function casTasksMain()
   end    
 end
 
---On death of all enemy groups, end mission
-
 
 --Create Designation Objects for Coalitions
 blueHQ = GROUP:FindByName("blue HQ")

@@ -3,27 +3,46 @@ This will spawn a random group of enemy units in a random zone.
 Radio items are available for the player to get the coordinates of the enemy unit]]--
 
 --flags to indicate when a mission needs to be started or ended
-flagBlueBaiMissionStart = USERFLAG:New("blueMissionStart")
+flagBlueBaiMissionStart = USERFLAG:New("blueBaiMissionStart")
 flagBlueBaiMissionStart:Set(0)
-flagBlueBaiMissionEnd = USERFLAG:New("blueMissionEnd")
+flagBlueBaiMissionEnd = USERFLAG:New("blueBaiMissionEnd")
 flagBlueBaiMissionEnd:Set(0)
+flagBlueBaiMissionRunning = USERFLAG:New("blueBaiMissionRunning")
+flagBlueBaiMissionRunning:Set(0)
 
 --Declare BAI Zones
 redBaiZones = {}
 redBaiZones[1] = ZONE:New("red BAI Zone #001")
+redBaiZones[2] = ZONE:New("red BAI Zone #002")
 
 --activate flag to start a blue BAI mission
 local function startBlueBaiMission()
   flagBlueBaiMissionStart:Set(1)
 end
 
---spawn the target group for BAI
-local function spawnBaiMission(enemyTemplates,spawnZones)
+---Routes the given group to a random zone in a list, mainly via road
+--@param #GROUP group is the group that is assigned the route
+--@param #ZONE zoneTable is the table of possible destination ZONEs
+--@return #ZONE destZone route's destination zone 
+local function routeToRandomZoneOnRoad(group,zoneTable)
+  local rand
+  local destZone
+  repeat
+    rand = math.random(table.getn(zoneTable))
+    destZone = zoneTable[rand]
+  until(not group:IsAnyInZone(destZone))
+  group:RouteGroundOnRoad(destZone:GetCoordinate(),60,2)
+  return destZone
+end
+
+--spawn the target group for BAI that will route to a random zone
+local function spawnBaiMission(enemyTemplates,spawnZones,destinationZones)
   local rand = math.random(table.getn(enemyTemplates))
   local rand2 = math.random(table.getn(spawnZones))
   local enemySpawn = SPAWN:NewWithAlias(enemyTemplates[rand],"enemy BAI Group")
   local enemyGroup = enemySpawn:SpawnInZone(spawnZones[rand2],true)
-  return enemyGroup
+  local destinationZone = routeToRandomZoneOnRoad(enemyGroup,destinationZones)
+  return enemyGroup,destinationZone
 end
 
 local function getMissionCoordinatesLLDMS(enemyGroup)
@@ -70,7 +89,7 @@ end
 local function baiTasksMain()
   --If flag to start mission is activated, spawn targets and add radio items to give coordinates
   if flagBlueBaiMissionStart:Is(1) then
-    blueEnemyGroup = spawnBaiMission(redBai,redBaiZones)    
+    blueEnemyGroup, blueEnemyDestination = spawnBaiMission(redBai,redBaiZones,redBaiZones)    
     blueBaiMissionGetCoordinatesOption = MENU_COALITION:New(coalition.side.BLUE,"Get BAI Mission Coordinates",blueBaiMissionOptions)
     blueBaiMissionGetCoordinatesLLDMS = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"LL DMS",blueBaiMissionGetCoordinatesOption,getMissionCoordinatesLLDMS,blueEnemyGroup)
     blueBaiMissionGetCoordinatesLLDDM = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"LL DDM",blueBaiMissionGetCoordinatesOption,getMissionCoordinatesLLDDM,blueEnemyGroup)
@@ -81,13 +100,23 @@ local function baiTasksMain()
     
     blueBaiMissionStart:Remove()
     flagBlueBaiMissionStart:Set(0)
+    flagBlueBaiMissionRunning:Set(1)
   end
   
+  if flagBlueBaiMissionRunning:Is(1) then
+    --If enemy Group has reached its destination, then route to a new zone
+    if blueEnemyGroup:IsAnyInZone(blueEnemyDestination) then
+    blueEnemyDestination = routeToRandomZoneOnRoad(blueEnemyGroup,redBaiZones)
+  end
+  end
+  
+  --Once mission is flagged to end, remove uneeded menus, add start menu commmand and remove enemy groups
   if flagBlueBaiMissionEnd:Is(1) then
     removeBaiUnits(blueEnemyGroup)
     blueBaiMissionStart = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Start BAI Mission",blueBaiMissionOptions,startBlueBaiMission,{})
     blueBaiMissionGetCoordinatesOption:Remove()
     blueBaiMissionCancel:Remove()
+    flagBlueBaiMissionRunning:Set(0)
     flagBlueBaiMissionEnd:Set(0)
   end
 end

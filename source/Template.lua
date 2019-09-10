@@ -28,4 +28,5 @@ blueCAS = {
 redBai = {
   "291_292 Artillery Rgt",
   "493 MRLS Rgt",
+  "429_503_34 Patrol Column",
 }
