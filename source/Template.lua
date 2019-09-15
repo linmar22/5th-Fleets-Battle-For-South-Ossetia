@@ -29,4 +29,18 @@ redBai = {
   "291_292 Artillery Rgt",
   "493 MRLS Rgt",
   "429_503_34 Patrol Column",
+  "693 Patrol Column",
+  "141 Patrol Column",
+  "North Ossetia Logistics Convoy",
+  "136_205 Patrol Column",
+  "135 Patrol Column",
+  "1128 Patrol Column",
+  "33 Patrol Column",
+  "73 Patrol Column",
+  "247 Patrol Column",
+  "100_10 Patrol Column",
+  "SO 10 Patrol Column",
+  "11 Patrol Column",
+  "13_15 Patrol Column",
+  "SO Tank Patrol Column"
 }

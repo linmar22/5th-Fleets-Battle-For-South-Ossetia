@@ -5,11 +5,11 @@ drone is also spawned to act as a reliable JTAC.  Player can then use Radio to g
 Las and command JTAC to smoke, lase ect.]]--
 
 --declare userflag to check if there is a CAS Mission already running.
-flagStartBlueCasMission = USERFLAG:New("startBlueCasMission")
+local flagStartBlueCasMission = USERFLAG:New("startBlueCasMission")
 flagStartBlueCasMission:Set(0)
-flagBlueCasMissionRunning = USERFLAG:New("blueCasMissionRunning")
+local flagBlueCasMissionRunning = USERFLAG:New("blueCasMissionRunning")
 flagBlueCasMissionRunning:Set(0)
-flagEndBlueCasMission = USERFLAG:New("endBlueCasMission")
+local flagEndBlueCasMission = USERFLAG:New("endBlueCasMission")
 flagEndBlueCasMission:Set(0)
 
 SETTINGS:SetA2G_LL_DDM()
@@ -93,6 +93,7 @@ end
 --Changes flag to start cancelling Mission
 local function blueCancelCasMission()
   flagEndBlueCasMission:Set(1)
+  flagBlueCasMissionRunning:Set(0)
 end
 
 --remove all Cas Units remaining in the game
@@ -106,20 +107,18 @@ end
 blueCasMissionOptions = MENU_COALITION:New(coalition.side.BLUE,"CAS Missions")
 blueCasMissionStart = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Start CAS Mission",blueCasMissionOptions,startBlueCasMission,{})
 
-
-
 --scheduled function to check if a mission has been set to start
 local function casTasksMain()  
   --Startup Mission if CLient has selected CAS Mission in radio command
   if flagStartBlueCasMission:Is(1) then
-    blueFriendlyGroup, blueEnemyGroup = spawnCasMission(redCAS,blueCAS,redCasZones,blueCasZones)
-    blueJtac = spawnBlueJtac(blueEnemyGroup)
+    blueCasFriendlyGroup, blueCasEnemyGroup = spawnCasMission(redCAS,blueCAS,redCasZones,blueCasZones)
+    blueJtac = spawnBlueJtac(blueCasEnemyGroup)
     
     --Create menu items for displaying coordinates of target area
     blueCasMissionGetCoordinatesOption = MENU_COALITION:New(coalition.side.BLUE,"Get CAS Mission Coordinates",blueCasMissionOptions)
-    blueCasMissionGetCoordinatesLLDMS = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"LL DMS",blueCasMissionGetCoordinatesOption,getMissionCoordinatesLLDMS,blueEnemyGroup)
-    blueCasMissionGetCoordinatesLLDDM = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"LL DDM",blueCasMissionGetCoordinatesOption,getMissionCoordinatesLLDDM,blueEnemyGroup)
-    blueCasMissionGetCoordinatesMGRS = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"MGRS",blueCasMissionGetCoordinatesOption,getMissionCoordinatesMGRS,blueEnemyGroup)
+    blueCasMissionGetCoordinatesLLDMS = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"LL DMS",blueCasMissionGetCoordinatesOption,getMissionCoordinatesLLDMS,blueCasEnemyGroup)
+    blueCasMissionGetCoordinatesLLDDM = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"LL DDM",blueCasMissionGetCoordinatesOption,getMissionCoordinatesLLDDM,blueCasEnemyGroup)
+    blueCasMissionGetCoordinatesMGRS = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"MGRS",blueCasMissionGetCoordinatesOption,getMissionCoordinatesMGRS,blueCasEnemyGroup)
     
     --Create Menu for cancelling the mission
     blueCasMissionCancel = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Cancel Mission",blueCasMissionOptions,blueCancelCasMission)
@@ -129,9 +128,15 @@ local function casTasksMain()
     flagStartBlueCasMission:Set(0)    
     flagBlueCasMissionRunning:Set(1)
   end
+  
+  --Check for certain parameters when the mission is running
+  if flagBlueCasMissionRunning:Is(1) then
+    
+  end
+  
   --Remove remaining units if Mission is cancelled or finished
   if flagEndBlueCasMission:Is(1) then
-    removeCasUnits(blueFriendlyGroup, blueEnemyGroup, blueJtac)
+    removeCasUnits(blueCasFriendlyGroup, blueCasEnemyGroup, blueJtac)
     blueCasMissionStart = MENU_COALITION_COMMAND:New(coalition.side.BLUE,"Start CAS Mission",blueCasMissionOptions,startBlueCasMission,{})
     blueCasMissionGetCoordinatesOption:Remove()
     blueCasMissionCancel:Remove()
